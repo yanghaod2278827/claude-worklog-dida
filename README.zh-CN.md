@@ -2,7 +2,11 @@
 
 面向 [Claude Code](https://claude.com/claude-code) 的**证据驱动工作日志**：把「你实际做了什么」自动变成**滴答清单里的已完成任务**和 **Obsidian 日记块**，每小时跑一次。
 
-> 状态：实验性项目，从个人日常流程中抽离。Windows 优先、滴答优先、提示词为中文。安装前请先看[已知局限](#已知局限)。
+> 状态：实验性项目，从个人日常流程中抽离。Windows 优先、滴答优先；提示词中英双语（`prompt_lang`）。安装前请先看[已知局限](#已知局限)。
+
+<img src="docs/demo-diary.svg" alt="滴答已完成任务与对应的 Obsidian 日记块" width="100%">
+
+<sub>示意图，合成数据，非真实截图。</sub>
 
 ```
 ~/.claude/projects/**/*.jsonl ──┐
@@ -77,9 +81,23 @@ powershell.exe -NoProfile -File scripts/register_weekly_task.ps1
 | `scan_skip` | 额外跳过的绝对路径前缀 |
 | `tz_offset` | 任务时间戳时区偏移（DeepSeek 计费为北京时间：`+0800`） |
 | `dida.credentials` / `dida.mcp_key` | MCP OAuth token 的读取位置 |
+| `dida.inbox_project_id` / `dida.inbox_column_id` | 新建任务写入的 Inbox ids（可从任一已有任务的返回体里找到） |
+| `task_tools.list_completed` / `add` / `update` | 渲染进提示词的 MCP 工具名 |
+| `prompt_lang` | `zh`（默认）或 `en`，选择 `worklog_prompt.<lang>.md` / `weekly_prompt.<lang>.md` |
 | `claude.command` | `claude` 可执行文件 |
 | `claude.cost_script` | 可选的人民币花费统计脚本；留空则不记花费 |
 | `schedule.task_folder` | 计划任务所在文件夹（默认 `\个人自动化\`） |
+
+## 适配其他任务管理器
+
+判断规则全在 Markdown 里，其中与后端相关的字符串是占位符，由 `render_prompt.py` 在运行时从 `config.json` 填入：
+
+```
+{{LIST_COMPLETED}} {{ADD_TASKS}} {{UPDATE_TASKS}}
+{{INBOX_PROJECT_ID}} {{INBOX_COLUMN_ID}} {{TIMEZONE}} {{TZ_OFFSET}}
+```
+
+要换成别的 MCP 任务后端：把 `task_tools.*` 改成对应工具名、填两个 Inbox id，再按后端调整提示词里的后端细节（两步置完成、`columnId`、status 取值）。目前只实测过滴答清单；Todoist / Notion **尚未支持**。
 
 ## 花费
 
@@ -105,8 +123,11 @@ scripts/
   weekly_summary.ps1     每周编排
   worklog_extract.py     转录 -> 证据
   fs_evidence.py         全机文件改动 -> 证据
-  worklog_prompt.md      全部判断规则（真正的核心资产）
-  weekly_prompt.md       周总结写作规则
+  worklog_prompt.zh.md   全部判断规则（真正的核心资产）
+  worklog_prompt.en.md   同一套规则的英文版
+  weekly_prompt.zh.md    周总结写作规则
+  weekly_prompt.en.md    英文版
+  render_prompt.py       用 config.json 填充后端占位符
   dida_to_obsidian.py    任务 -> 日记块
   obsidian_to_dida.py    日记手写行 -> 任务（反向）
   weekly_extract.py      周证据 + 程序统计

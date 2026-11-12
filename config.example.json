@@ -15,11 +15,19 @@
   "tz_offset": "+0800",
 
   "task_manager": "dida365",
+  "task_tools": {
+    "list_completed": "mcp__dida365__list_completed_tasks_by_date",
+    "add": "mcp__dida365__batch_add_tasks",
+    "update": "mcp__dida365__batch_update_tasks"
+  },
   "dida": {
     "credentials": "~/.claude/.credentials.json",
     "mcp_key": "",
+    "inbox_project_id": "",
     "inbox_column_id": ""
   },
+
+  "prompt_lang": "zh",
 
   "claude": {
     "command": "claude",

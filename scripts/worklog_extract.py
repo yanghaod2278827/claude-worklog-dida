@@ -26,7 +26,7 @@ HOME = os.path.expanduser('~')
 DEFAULT_OUT_DIR = wl_config.DATA_DIR
 # 自动化自身会话：只要任意一条 user 消息里出现这些指令文件名，整个 session 跳过。
 # weekly_prompt.md 于 2026-11-05 加入（周总结任务也是自动化，不该被记成"做了工作"）。
-AUTO_MARK = ('worklog_prompt.md', 'weekly_prompt.md')
+AUTO_MARK = ('worklog_prompt', 'weekly_prompt')
 
 NOISE = re.compile(
     r'^API Error|^Look at the available-skills|^\[Image|^Caveat|^This session is being continued|'

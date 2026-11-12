@@ -127,7 +127,11 @@ if ($DryRun) {
     exit 0
 }
 
-$promptFile = Join-Path $Scripts 'worklog_prompt.md'
+$Lang = Wl-Get $WlCfg 'prompt_lang' 'zh'
+$PromptSrc = Join-Path $Scripts ('worklog_prompt.{0}.md' -f $Lang)
+$promptFile = Join-Path $Data ('worklog_prompt_rendered_{0}.md' -f $date)
+$renderOut = & $Py (Join-Path $Scripts 'render_prompt.py') --template $PromptSrc --out $promptFile 2>&1 | Out-String
+if ($LASTEXITCODE -ne 0) { Write-Log ('FAIL render prompt :: ' + $renderOut.Trim()); exit 1 }
 if (-not (Test-Path $evidence)) { Write-Log "FAIL evidence missing"; exit 1 }
 
 # ---- 2. call claude -p ----

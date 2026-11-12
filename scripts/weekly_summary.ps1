@@ -29,7 +29,8 @@ $claudeCfg = Wl-ClaudeCfg
 $ClaudeCmd = Wl-Get $claudeCfg 'command' 'claude'
 $CostScript = Wl-Expand (Wl-Get $claudeCfg 'cost_script' '')
 $ExtractScript = Join-Path $Scripts 'weekly_extract.py'
-$PromptFile = Join-Path $Scripts 'weekly_prompt.md'
+$Lang = Wl-Get $WlCfg 'prompt_lang' 'zh'
+$PromptFile = Join-Path $Scripts ('weekly_prompt.{0}.md' -f $Lang)
 
 foreach ($d in @($Logs, $Data, $DiaryDir)) {
     if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
@@ -161,7 +162,7 @@ if ($tail.Length -gt 800) { $tail = $tail.Substring($tail.Length - 800) }
 $fileOk = $false
 if (Test-Path $outFile) {
     $txt = Get-Content $outFile -Raw -Encoding UTF8
-    $fileOk = ($txt -match 'type:\s*周总结') -and ($txt -match 'generated_at:') -and ($txt -match '## 一、本周概览')
+    $fileOk = ($txt -match 'type:\s*(周总结|weekly-summary)') -and ($txt -match 'generated_at:') -and ($txt -match '## (一、本周概览|1\. Overview)')
 }
 $ok = ($tail -match 'WEEK_DONE') -and $fileOk
 if ($tail -match 'WEEK_NODATA') { $ok = $false }

@@ -23,11 +23,20 @@ DEFAULTS = {
     "timezone": "Asia/Shanghai",
     "tz_offset": "+0800",
     "task_manager": "dida365",
+    # Tool names resolved into the prompt by render_prompt.py. Point these at
+    # another MCP backend without touching the rules text.
+    "task_tools": {
+        "list_completed": "mcp__dida365__list_completed_tasks_by_date",
+        "add": "mcp__dida365__batch_add_tasks",
+        "update": "mcp__dida365__batch_update_tasks",
+    },
     "dida": {
         "credentials": "~/.claude/.credentials.json",
         "mcp_key": "",
+        "inbox_project_id": "",
         "inbox_column_id": "",
     },
+    "prompt_lang": "zh",
     "claude": {
         "command": "claude",
         "cost_script": "~/.claude/scripts/cc_cny_peak.py",

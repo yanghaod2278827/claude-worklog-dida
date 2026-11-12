@@ -40,7 +40,7 @@
    - 同一件事跨多个会话、或同时出现在会话与文件证据里 → 合并成 1 条。
    - 会话里零散的 `继续` / `可以` / `A` / 纯图片消息不单独成条，归到它所属的那件事。
    - 文件改动证据按「同一目录 / 同一主题」归纳成 1 件，并与会话证据合并去重。
-2. **查重**：调用 `mcp__dida365__list_completed_tasks_by_date`（startDate = 当天 00:00，endDate = 当天 23:59，时区 Asia/Shanghai），拿到当天已有任务标题。凡已有任务覆盖了同一件事，**跳过，不要重复记**。
+2. **查重**：调用 `{{LIST_COMPLETED}}`（startDate = 当天 00:00，endDate = 当天 23:59，时区 {{TIMEZONE}}），拿到当天已有任务标题。凡已有任务覆盖了同一件事，**跳过，不要重复记**。
 
    ⚠️ **例外：同一件事后来又做了（2026-11-06 加入）**。已有任务只代表**建它那一刻**为止的时间窗；证据里如果同一件事还有**更晚的时刻**（同一文件/同一目录又被改，或会话在该任务结束时刻之后仍在做这件事），**不能简单跳过**——把它记进「待延时」清单，交给步骤 3.5 把该任务的时间窗往后延。反过来也成立：证据里有**更早**的时刻（同一件事最早其实更早）也要一并延。
    典型场景：15:23 建了「重绘技术路线图」15:23–15:25，同一会话 18:48 又在改同一个图 → 这条任务的时间窗应变成 15:23–18:49，而不是停在 15:25。
@@ -64,7 +64,7 @@
 **怎么算**：
 - 完成时刻 = `createdTime`（添加时间，带时分秒，取到分钟）。
 - ⚠️ **跨日例外**：若任务计划日（`startDate` 的日期）≠ `createdTime` 的日期，说明这是提前建待办或事后补记，直接拿添加时刻会把任务挪到别的日子。此时**保留计划日**，只用 `createdTime` 的 `HH:MM`。
-  例：计划 10-22、10-15 15:11 添加 → 完成时刻 `2026-10-22T15:11:00+0800`。
+  例：计划 10-22、10-15 15:11 添加 → 完成时刻 `2026-10-22T15:11:00{{TZ_OFFSET}}`。
 - 估算时长按任务类型（与 `scripts/tools/manual_time_fix.py` 的 `DURATION_RULES` 一致，改一处要同改另一处）：
 
   | 命中关键词 | 时长 | 类别 |
@@ -98,7 +98,7 @@
 ```
 第二行的时刻用**该任务的完成时刻**，不是 `UpdatedAt`。
 
-**提交**：一次 `mcp__dida365__batch_update_tasks`，每条只传
+**提交**：一次 `{{UPDATE_TASKS}}`，每条只传
 `{id, projectId, content, startDate, dueDate, completedTime, isAllDay}`。
 ⚠️ 完成时刻必须是过去时刻（写未来会让任务在「已完成」列表里消失）。
 
@@ -125,7 +125,7 @@
 - 现有的开始时刻若明显早于该事最早证据、且中间隔着几小时无相关改动，同样回缩。
 例：任务结束写 `22:41`，而证据里 `22:41` 只出现在无关目录 → 回缩；晶粒计数相关的最后文件是 `20:47` → 结束改成 `20:47`。
 
-**提交**：一次 `mcp__dida365__batch_update_tasks`，每条**只传** `{id, projectId, startDate, dueDate, completedTime, isAllDay: false}`（`startDate`/`dueDate`/`completedTime` 用新时间窗，`dueDate` 与 `completedTime` 同为结束时刻）。
+**提交**：一次 `{{UPDATE_TASKS}}`，每条**只传** `{id, projectId, startDate, dueDate, completedTime, isAllDay: false}`（`startDate`/`dueDate`/`completedTime` 用新时间窗，`dueDate` 与 `completedTime` 同为结束时刻）。
 ⚠️ **不要传** `title` / `content` / `status`——改 content 会和时间戳刷新打架，改 status 可能把已完成任务翻回未完成。
 ⚠️ 本步与步骤 8 是两个不同的更新：**本步负责时间字段，步骤 8 只负责 content**，不要合并成一次调用，也不要在步骤 8 里传时间字段。
 一条都不需要延就不调工具，本步计 `ext=0`。
@@ -140,8 +140,8 @@
      * 文件证据每个文件/目录行都带 `HH:MM:SS`；
      * 同一件事合并多条证据时：**开始取最早时间，结束取最晚时间**；
      * 没有任何时间证据的（例如只来自日记手写行，或目录变动），开始和结束都用 prompt 给出的 `FallbackTime`。
-   - 先 `mcp__dida365__batch_add_tasks`，每条传：`projectId="inbox1010420856"`、**`columnId="671efb6c8bb9d136b0557114"`**（Inbox 的「未分组」列，缺了任务会在列表里显示不出来）、`title`、`content`、`startDate`=`<日期>T<开始>:00+0800`、`dueDate`=`<日期>T<结束>:00+0800`、`timeZone="Asia/Shanghai"`、`isAllDay=false`。
-   - 再 `mcp__dida365__batch_update_tasks`，用上一步返回的 `taskId`，每条传 `{id, projectId, status: 2, completedTime: "<日期>T<结束>:00+0800"}`。
+   - 先 `{{ADD_TASKS}}`，每条传：`projectId="{{INBOX_PROJECT_ID}}"`、**`columnId="{{INBOX_COLUMN_ID}}"`**（Inbox 的「未分组」列，缺了任务会在列表里显示不出来）、`title`、`content`、`startDate`=`<日期>T<开始>:00{{TZ_OFFSET}}`、`dueDate`=`<日期>T<结束>:00{{TZ_OFFSET}}`、`timeZone="{{TIMEZONE}}"`、`isAllDay=false`。
+   - 再 `{{UPDATE_TASKS}}`，用上一步返回的 `taskId`，每条传 `{id, projectId, status: 2, completedTime: "<日期>T<结束>:00{{TZ_OFFSET}}"}`。
    - ⚠️ 创建时传 `status`/`completedTime` 会被**静默忽略**，必须靠第二步。
    - **跨时段的同一件事 → 加序号拆条（2026-11-06 加入）**：同一件事的证据分成几个互不相连的时段、且**相邻时段空档 ≥ 2 小时**时，按时段拆成多条，标题末尾加 `（1/N）`、`（2/N）`…，每条只写自己那段的起止。
      例：`💼 收集报名加分材料（1/2）` 11:46–11:52 + `💼 收集报名加分材料（2/2）` 18:34–19:54，而不是一条 11:46–19:54（会假装连续做了 8 小时）。
@@ -227,14 +227,14 @@
 
 新建任务时 content 已经带了 `最后更新：<UpdatedAt>`，但**当天原有的自动任务**还停在旧值。这一步把当天所有自动任务统一刷新成本轮时间：
 
-1. 调一次 `mcp__dida365__list_completed_tasks_by_date`（当天 00:00~23:59，Asia/Shanghai），拿**最终任务清单**。这次查询结果同时供步骤 9 使用，**不要为步骤 9 再查一遍**。
+1. 调一次 `{{LIST_COMPLETED}}`（当天 00:00~23:59，{{TIMEZONE}}），拿**最终任务清单**。这次查询结果同时供步骤 9 使用，**不要为步骤 9 再查一遍**。
 2. 只处理 content 首行以下列前缀开头的任务（本项目自动生成的）：
    `本地记录自动补录` / `本地文件改动自动补录` / `本地目录变动自动补录` /
    `依据 Obsidian 日记自动补录` / `依据 Obsidian 日记补录` / `依据本地记录补录`
    （后两种是早期写法的历史遗留，冒号全角半角都算）。
    **content 为空或其它内容的是用户手建任务，一律不动。**
 3. 新 content = 先去掉已有的时间戳行（正则 `(?:\r?\n)?最后更新：\d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*$`），再追加 `\n最后更新：<UpdatedAt>`。已经是本轮值且其余内容未变的，跳过。
-4. 调 `mcp__dida365__batch_update_tasks`，每批 ≤50 条，每条**只传** `{id, projectId, content}`——**不要**传 `status` / `completedTime` / `startDate` / `dueDate` / `title`，否则会覆盖任务的时间与完成状态。
+4. 调 `{{UPDATE_TASKS}}`，每批 ≤50 条，每条**只传** `{id, projectId, content}`——**不要**传 `status` / `completedTime` / `startDate` / `dueDate` / `title`，否则会覆盖任务的时间与完成状态。
 5. 本步失败不算整体失败，但要如实体现在结果里。
 
 ## 步骤 9：自检重复（只报告，不删除）
