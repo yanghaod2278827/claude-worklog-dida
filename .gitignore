@@ -1,0 +1,9 @@
+# runtime state, evidence snapshots and logs are personal data
+data/
+logs/
+备份/
+__pycache__/
+*.pyc
+
+# personal config (paths + MCP key). Ship config.example.json instead.
+config.json

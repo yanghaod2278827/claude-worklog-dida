@@ -1,0 +1,35 @@
+{
+  "_comment": "Copy to config.json and adjust. All paths accept ~ and environment variables. Empty values fall back to the defaults shown in scripts/wl_config.py.",
+
+  "vault": "~/ObsidianVault",
+  "daily_note_dir": "~/ObsidianVault",
+  "legacy_daily_dir": "~/ObsidianVault/日记",
+  "weekly_dir": "~/ObsidianVault/07-日记",
+
+  "claude_projects": "~/.claude/projects",
+
+  "scan_roots": [],
+  "scan_skip": [],
+
+  "timezone": "Asia/Shanghai",
+  "tz_offset": "+0800",
+
+  "task_manager": "dida365",
+  "dida": {
+    "credentials": "~/.claude/.credentials.json",
+    "mcp_key": "",
+    "inbox_column_id": ""
+  },
+
+  "claude": {
+    "command": "claude",
+    "cost_script": "~/.claude/scripts/cc_cny_peak.py",
+    "max_runtime_min": 10
+  },
+
+  "schedule": {
+    "task_folder": "\\个人自动化\\",
+    "worklog_task": "ClaudeCode-DailyWorkLog",
+    "weekly_task": "ClaudeCode-WeeklySummary"
+  }
+}
