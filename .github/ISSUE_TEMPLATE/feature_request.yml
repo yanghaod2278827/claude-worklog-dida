@@ -1,0 +1,56 @@
+name: Feature request
+description: Suggest a rule change, a new backend adapter, or an orchestration improvement.
+title: "[feature] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The project deliberately keeps **all judging rules in `scripts/worklog_prompt.*.md`** and the orchestrator dumb.
+        If your idea is about *what counts as work*, say which step of the prompt should change and why.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you hitting?
+      description: Describe the real situation, not just the solution. Include a redacted example if possible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Which file/step should change — prompt rule, adapter config, orchestrator, docs?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Prompt rules (what counts as work / dedup / time windows)
+        - Task backend adapter
+        - Orchestrator / scheduling
+        - Weekly summary
+        - Documentation / demo
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Including "I configured X instead" — maybe no code change is needed.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Checklist
+      options:
+        - label: This does not require copying personal data into the repo.
+          required: true

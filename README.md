@@ -1,12 +1,14 @@
 # claude-worklog-dida
 
+[![tests](https://github.com/yanghaod2278827/claude-worklog-dida/actions/workflows/tests.yml/badge.svg)](https://github.com/yanghaod2278827/claude-worklog-dida/actions/workflows/tests.yml)
+
 Evidence-based daily work journal for [Claude Code](https://claude.com/claude-code): turn what you actually did into **completed tasks in Dida365 (TickTick)** and a **diary block in Obsidian** — automatically, every hour.
 
 > Status: experimental, extracted from a personal daily workflow. Windows-first, Dida365-first. Prompts ship in Chinese and English (`prompt_lang`). See [Limitations](#limitations) before installing.
 
-<img src="docs/demo-diary.svg" alt="Completed tasks in Dida365 and the matching Obsidian diary block" width="100%">
+<img src="docs/demo-diary.png" alt="Completed tasks in Dida365 and the matching Obsidian diary block" width="100%">
 
-<sub>Illustrative mockup with synthetic data — not a screenshot.</sub>
+<sub>Screenshot of the real `dida_to_obsidian.build_block()` output rendered from synthetic tasks (`docs/make_demo.py`) — not a hand-drawn mockup.</sub>
 
 ```
 ~/.claude/projects/**/*.jsonl ──┐
@@ -136,7 +138,10 @@ scripts/
   weekly_extract.py      week evidence + program-computed stats
   register_*.ps1         scheduled-task registration
   wl_config.py/.ps1      shared config loader
-  tools/                 MCP HTTP bridge, task audit, BOM helper
+  tools/                 MCP HTTP bridge, task audit, BOM helper, selftest
+docs/
+  make_demo.py           regenerates the screenshot from real builder output
+  demo-diary.png         committed screenshot
 ```
 
 ## License

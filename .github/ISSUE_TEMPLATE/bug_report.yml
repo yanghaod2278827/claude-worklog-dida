@@ -1,0 +1,93 @@
+name: Bug report
+description: Something in the pipeline failed, wrote the wrong task, or silently did nothing.
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before filing:** run the dry run first — it exercises extraction and the filesystem scan without calling the model or writing tasks:
+
+        ```powershell
+        powershell.exe -NoProfile -File scripts/daily_worklog.ps1 -DryRun
+        powershell.exe -NoProfile -File scripts/weekly_summary.ps1 -WeekEnd <any-day> -DryRun
+        ```
+
+        **Redact before posting:** task titles, diary text, vault paths, usernames, file names and MCP keys are personal. Replace them with `<redacted>`.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What the log said and what ended up in the task manager / diary.
+      placeholder: "Log line: CLAUDE ... ok=False ... ; expected 3 tasks, got 0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: Steps and the exact commands. Note whether it was a scheduled run or a manual one, and whether another instance was running.
+      placeholder: |
+        1. config.json has ...
+        2. ran `powershell -NoProfile -File scripts/daily_worklog.ps1 -Force`
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines (redacted)
+      description: "`logs/daily_worklog.log` / `logs/weekly_summary.log` — the last ~30 lines are usually enough."
+      render: shell
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options:
+        - Windows 11
+        - Windows 10
+        - Other (not officially supported)
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: PowerShell, Python, Claude Code CLI, and the task backend.
+      placeholder: "PS 5.1 / Python 3.12.10 / claude 2.1.319 / Dida365 MCP"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Task backend
+      options:
+        - Dida365 / TickTick
+        - Other MCP backend (describe above)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Checklist
+      options:
+        - label: I ran the dry run and included its output (or explained why it was not possible).
+          required: true
+        - label: I removed personal data (task titles, paths, usernames, MCP keys) from this report.
+          required: true

@@ -1,0 +1,43 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  selftest:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Self test (compile, config, prompt rendering)
+        run: python scripts/tools/selftest.py
+
+      - name: Parse PowerShell files
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $bad = 0
+          Get-ChildItem scripts -Recurse -Filter *.ps1 | ForEach-Object {
+            $err = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName, [ref]$null, [ref]$err)
+            if ($err.Count) {
+              Write-Output ("PARSE FAIL {0}: {1}" -f $_.Name, $err[0].Message)
+              $bad++
+            } else {
+              Write-Output ("PS OK {0}" -f $_.Name)
+            }
+          }
+          if ($bad -gt 0) { exit 1 }

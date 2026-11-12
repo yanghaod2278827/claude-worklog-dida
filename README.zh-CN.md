@@ -1,12 +1,14 @@
 # claude-worklog-dida
 
+[![tests](https://github.com/yanghaod2278827/claude-worklog-dida/actions/workflows/tests.yml/badge.svg)](https://github.com/yanghaod2278827/claude-worklog-dida/actions/workflows/tests.yml)
+
 面向 [Claude Code](https://claude.com/claude-code) 的**证据驱动工作日志**：把「你实际做了什么」自动变成**滴答清单里的已完成任务**和 **Obsidian 日记块**，每小时跑一次。
 
 > 状态：实验性项目，从个人日常流程中抽离。Windows 优先、滴答优先；提示词中英双语（`prompt_lang`）。安装前请先看[已知局限](#已知局限)。
 
-<img src="docs/demo-diary.svg" alt="滴答已完成任务与对应的 Obsidian 日记块" width="100%">
+<img src="docs/demo-diary.png" alt="滴答已完成任务与对应的 Obsidian 日记块" width="100%">
 
-<sub>示意图，合成数据，非真实截图。</sub>
+<sub>截图来源：用合成任务调用真实的 `dida_to_obsidian.build_block()` 后渲染（`docs/make_demo.py`），不是手绘图。</sub>
 
 ```
 ~/.claude/projects/**/*.jsonl ──┐
@@ -133,7 +135,10 @@ scripts/
   weekly_extract.py      周证据 + 程序统计
   register_*.ps1         计划任务注册
   wl_config.py/.ps1      共享配置加载
-  tools/                 MCP HTTP 桥、任务审计、BOM 工具
+  tools/                 MCP HTTP 桥、任务审计、BOM 工具、selftest
+docs/
+  make_demo.py           用真实 build_block 输出重生成截图
+  demo-diary.png         已提交的截图
 ```
 
 ## 许可证
