@@ -120,6 +120,21 @@ Evidence sent to the model includes your prompts, file names/paths and diary tex
 - Only covers work with local traces (Claude sessions or file changes). Meetings, reading and phone work are invisible unless written into the diary.
 - Claude Code transcripts are retained ~30 days; gaps longer than that cannot be backfilled.
 
+## Troubleshooting: an old task shows up as "completed today"
+
+A diary line with **no time prefix whose title looks months old** is usually not invented by this tool — another client moved that task's `completedTime` to "now":
+
+- **Cause (measured)**: Obsidian's DidaSync plugin (v1.7.6) ends `updateTaskInDidaList()` with `if (task.status === 2) await completeTaskInDida(task)` — every re-push of an already-completed task calls `POST /project/{id}/task/{id}/complete`, and the server stamps `completedTime = now`. Its "reverse completion" bookkeeping re-pushes tasks missing from the remote *active* list (i.e. every completed task), so old items periodically resurface as completed today.
+- **How to tell**: `completedTime` far later than `createdTime`/`dueDate`, typically on an all-day, content-less task; DidaSync's `data.json` carries `reverseCompletionMeta[<didaId>].lastMissingAt` a few seconds before the new completion time.
+- **Fix** (restore the completion time; read-only unless `--apply`):
+
+```bash
+python3 scripts/tools/fix_task_completed_time.py --date 2026-11-18 --title substring
+python3 scripts/tools/fix_task_completed_time.py --date 2026-11-18 --title substring --apply
+```
+
+The next hourly run drops it from today's diary block; older diary blocks must be edited by hand. Note that `list_completed_tasks_by_date` does not reliably filter by `fromDate`/`toDate` — verify by checking whether the task is still in the current list.
+
 ## Layout
 
 ```
@@ -138,7 +153,7 @@ scripts/
   weekly_extract.py      week evidence + program-computed stats
   register_*.ps1         scheduled-task registration
   wl_config.py/.ps1      shared config loader
-  tools/                 MCP HTTP bridge, task audit, BOM helper, selftest
+  tools/                 MCP HTTP bridge, task audit, BOM helper, selftest, completion-time repair
 docs/
   make_demo.py           regenerates the screenshot from real builder output
   demo-diary.png         committed screenshot

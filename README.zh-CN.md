@@ -117,6 +117,21 @@ powershell.exe -NoProfile -File scripts/register_weekly_task.ps1
 - 只覆盖有本地痕迹的工作（Claude 会话或文件改动）；开会、阅读、电话除非写进日记，否则抓不到。
 - Claude Code 转录只保留约 30 天，超过一个月的空档补不回来。
 
+## 故障排查：老任务被记成「今天完成」
+
+日记块里出现一条**没有时刻前缀、标题却像几个月前的旧待办**时，多半不是本工具编的，而是任务的 `completedTime` 被别的客户端改成了「现在」：
+
+- **成因（实测）**：Obsidian 的 DidaSync 插件(v1.7.6) `updateTaskInDidaList()` 末尾有 `if (task.status === 2) await completeTaskInDida(task)` —— 每重推一次**已完成**任务就调一次 `POST /project/{id}/task/{id}/complete`，服务端把 `completedTime` 刷成当前时刻。它的「反向完成」记账会把不在远端**活跃列表**里的任务（即所有已完成任务）重新推一遍，于是旧任务周期性以「今天完成」的身份出现。
+- **判定**：`completedTime` 明显晚于 `createdTime`/`dueDate`（如 7 月建、今天「完成」），且该任务 `content` 为空的手建任务；DidaSync 的 `data.json` 里对应条目有 `reverseCompletionMeta[<didaId>].lastMissingAt` 与完成时间只差几秒。
+- **修复**（把完成时间改回原计划日，默认只读）：
+
+```bash
+python3 scripts/tools/fix_task_completed_time.py --date 2026-11-18 --title 关键字        # 看
+python3 scripts/tools/fix_task_completed_time.py --date 2026-11-18 --title 关键字 --apply # 改
+```
+
+改完下一轮就会自动从当日日记块里掉出去；历史日期的日记块要手改。**注意 MCP 的 `list_completed_tasks_by_date` 未必按 `fromDate/toDate` 过滤**，复核时以「当前列表里还有没有它」为准。
+
 ## 目录
 
 ```
@@ -135,7 +150,7 @@ scripts/
   weekly_extract.py      周证据 + 程序统计
   register_*.ps1         计划任务注册
   wl_config.py/.ps1      共享配置加载
-  tools/                 MCP HTTP 桥、任务审计、BOM 工具、selftest
+  tools/                 MCP HTTP 桥、任务审计、BOM 工具、selftest、完成时间修正
 docs/
   make_demo.py           用真实 build_block 输出重生成截图
   demo-diary.png         已提交的截图
