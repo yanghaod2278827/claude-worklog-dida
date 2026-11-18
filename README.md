@@ -135,6 +135,8 @@ python3 scripts/tools/fix_task_completed_time.py --date 2026-11-18 --title subst
 
 The next hourly run drops it from today's diary block; older diary blocks must be edited by hand. Note that `list_completed_tasks_by_date` does not reliably filter by `fromDate`/`toDate` — verify by checking whether the task is still in the current list.
 
+The prompt also carries an **anomaly guard**: a task whose `createdTime` predates `completedTime` by more than 30 days, has empty `content`, and matches nothing in the day's evidence is treated as anomalous — no field is touched and it is kept out of the diary block; the run logs `WARN anomaly=N` (details in `data/anomalies_<date>.txt`) plus an `ANOMALY: <id> | <title> | created=… completed=…` line for you to fix with the command above.
+
 ## Layout
 
 ```

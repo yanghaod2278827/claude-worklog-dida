@@ -132,6 +132,8 @@ python3 scripts/tools/fix_task_completed_time.py --date 2026-11-18 --title 关�
 
 改完下一轮就会自动从当日日记块里掉出去；历史日期的日记块要手改。**注意 MCP 的 `list_completed_tasks_by_date` 未必按 `fromDate/toDate` 过滤**，复核时以「当前列表里还有没有它」为准。
 
+提示词里另有一条**异常任务护栏**：`createdTime` 比 `completedTime` 早 30 天以上、`content` 为空、当天证据又对不上的任务，会被判为异常——不改字段、不进日记块，只在日志里打 `WARN anomaly=N`（明细落 `data/anomalies_<日期>.txt`）与 `ANOMALY: <id> | <标题> | created=… completed=…` 行，等你用上面的命令修。
+
 ## 目录
 
 ```

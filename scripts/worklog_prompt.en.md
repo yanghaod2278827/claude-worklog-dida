@@ -50,6 +50,15 @@ Both sections describe the same work; **judge them together**. If the same piece
 
    ⚠️ **"Already exists" means this run's `{{LIST_COMPLETED}}` result only.** The `<!-- dida365:begin -->` block in the diary is written by this pipeline itself and **must not** be used as evidence of coverage (that self-reinforces and causes missed records).
 
+   ⚠️ **Anomaly guard (added 2026-11-18).** Some "completed" tasks in the list were **not** done today: another client moved their `completedTime` to today. Measured cause: the Obsidian DidaSync plugin re-pushes completed tasks through the `/complete` endpoint, and the server stamps the completion time with "now", so months-old to-dos impersonate today's work. Treat a task as anomalous when **all three** hold:
+   1. `createdTime` is **more than 30 days before** `completedTime`;
+   2. `content` is **empty** (or handwritten text that is not an auto-record prefix);
+   3. the day's evidence shows **nothing corresponding** (no session, file change, directory change or handwritten diary line).
+
+   For an anomalous task: **change no field at all** — do not auto-time it in step 3, do not extend it in step 3.5, do not refresh it in step 8, and **do not write it into the diary block**. Instead print one line before the result line:
+   `ANOMALY: <id> | <title> | created=<createdTime> completed=<completedTime>`
+   so a human can run `scripts/tools/fix_task_completed_time.py --date <date> --title <substring> --apply` to restore the original plan date. **Prefer missing an anomaly over misclassifying real work**: if the evidence does contain a matching deliverable, treat it as a normal task.
+
 ## Step 3: add times to "manually added all-day tasks"
 
 Users often create tasks by hand in the task manager and tick them complete directly. Those tasks have **all-day** dates (`isAllDay=true`, `startDate`/`dueDate` end with `T00:00:00`) and show up in the diary block without a time. This step converts them into timed tasks using **the task list already fetched in step 2** (do not query again).
@@ -58,6 +67,8 @@ Users often create tasks by hand in the task manager and tick them complete dire
 1. `status == 2` (completed)
 2. `isAllDay == true`, or `startDate`/`dueDate` end with `T00:00:00`
 3. `content` does **not** start with any auto-record prefix, **and** does not start with `manual entry:`
+
+**Exclusion**: skip any task flagged as **anomalous** in step 2 (its `completedTime` was rewritten by an external client) — auto-timing it would endorse someone else's error and can move the task to a wrong date.
    (auto prefixes are listed in step 8; `manual entry:` means this step already handled it — skip for idempotency)
 
 **How to compute**:
@@ -192,6 +203,7 @@ Rules:
 - Existing file without markers → append a blank line and the block at the end.
 - Ordering: **ascending by start time**; untimed tasks go **last**, ordered by the emoji order above, then title.
 - Block content **must come from this run's `{{LIST_COMPLETED}}` result**; deleted tasks must not linger.
+- Tasks flagged **anomalous in step 2** (`completedTime` rewritten by another client) are **not** written into the block; report them with an `ANOMALY:` line instead.
 - Identical titles on the same day merge into one with ` ×N`, except tasks with `(n/N)` numbers (list them separately).
 - Keep titles verbatim (including emoji).
 
@@ -236,6 +248,9 @@ Using step 8's final list, compare every pair:
 Print exactly one final line:
 `DONE date=<date> created=<session records> fs=<file records> rev=<diary records> skipped=<skipped> dup=<duplicate pairs> stamp=<refreshed> mt=<manual timed> ext=<extended> diary=<ok|fail>`
 or `NO_WORK`.
+
+Before the result line, print one line per anomalous task found in step 2:
+`ANOMALY: <id> | <title> | created=<createdTime> completed=<completedTime>`. Print nothing if there are none.
 
 ## Efficiency
 
