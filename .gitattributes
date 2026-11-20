@@ -4,3 +4,7 @@
 *.json text eol=lf
 *.ps1 text eol=crlf
 *.psm1 text eol=crlf
+
+# editorconfig / CI 配置保持 LF，与 .editorconfig 的 end_of_line 一致
+.editorconfig text eol=lf
+*.yml text eol=lf
