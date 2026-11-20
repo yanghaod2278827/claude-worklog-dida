@@ -1,0 +1,9 @@
+version: 2
+updates:
+  # 只跟 CI 里用到的 GitHub Actions（checkout / setup-python）
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"

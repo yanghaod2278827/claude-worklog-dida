@@ -1,0 +1,22 @@
+# https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_size = 4
+
+[*.{md,markdown}]
+trim_trailing_whitespace = false   # Markdown 行尾两个空格是换行语法
+
+[*.{toml,yaml,yml,json}]
+indent_size = 2
+
+[*.{ps1,bat,cmd}]
+end_of_line = crlf                 # Windows 脚本保持 CRLF（PowerShell 脚本还需 UTF-8 BOM）（PowerShell 脚本还需 UTF-8 BOM）
